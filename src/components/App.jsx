@@ -17,8 +17,8 @@ function App() {
   const [modalImageUrl, setModalImageUrl] = useState('');
 
   useEffect(() => {
-    const fetchImages = () => {
-      const url = `https://pixabay.com/api/?q=${query}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`;
+    const fetchImages = pageNumber => {
+      const url = `https://pixabay.com/api/?q=${query}&page=${pageNumber}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`;
 
       fetch(url)
         .then(response => response.json())
@@ -36,16 +36,16 @@ function App() {
     };
 
     if (query && page) {
-      setIsLoading(true);
-      fetchImages();
+      setIsLoading(false);
+      fetchImages(page);
     }
-  }, [query, page]);
+  }, [query, page, images]);
 
   useEffect(() => {
     if (images.length > 0) {
       setIsLoading(false);
     }
-  }, [images]);
+  }, [images.length]);
 
   const onChangeQuery = query => {
     setQuery(query);
@@ -65,7 +65,7 @@ function App() {
 
   const handleLoadMore = () => {
     setIsLoading(true);
-    setPage(page + 1);
+    setPage(prevPage => prevPage + 1);
   };
 
   const shouldRenderLoadMoreButton = images.length > 0 && !isLoading;
