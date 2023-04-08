@@ -4,8 +4,9 @@ import ImageGalleryItem from '../ImageGalleryItem/ImageGalleryItem';
 import css from '../ImageGallery/ImageGallery.module.css';
 
 const ImageGallery = ({ images, onImageClick }) => {
-  if (images.length === 0) {
-  }
+  const handleImageClick = webformatURL => {
+    onImageClick(webformatURL);
+  };
 
   return (
     <ul className={css.ImageGallery}>
@@ -13,7 +14,7 @@ const ImageGallery = ({ images, onImageClick }) => {
         <ImageGalleryItem
           key={id}
           src={webformatURL}
-          onClick={() => onImageClick(webformatURL)}
+          onClick={() => handleImageClick(webformatURL)}
         />
       ))}
     </ul>
