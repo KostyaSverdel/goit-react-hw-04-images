@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Loader from './Loader/Loader';
@@ -17,38 +17,31 @@ function App() {
   const [modalImageUrl, setModalImageUrl] = useState('');
 
   useEffect(() => {
-    const fetchImages = pageNumber => {
-      const url = `https://pixabay.com/api/?q=${query}&page=${pageNumber}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`;
+    if (query !== '') {
+      fetchImages();
+    } // eslint-disable-next-line
+  }, [query, page]);
 
-      fetch(url)
-        .then(response => response.json())
-        .then(data => {
-          const newImages = data.hits.filter(
-            hit => !images.find(img => img.id === hit.id)
-          );
-          setImages(prevImages => [...prevImages, ...newImages]);
-          setIsLoading(false);
-        })
-        .catch(error => {
-          console.error('Error fetching images', error);
-          setIsLoading(false);
-        });
-    };
+  const fetchImages = () => {
+    setIsLoading(true);
+    const url = `https://pixabay.com/api/?q=${query}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`;
+    fetch(url)
+      .then(response => response.json())
+      .then(data => {
+        const newImages = data.hits.filter(
+          hit => !images.find(img => img.id === hit.id)
+        );
+        setImages(prevImages => [...prevImages, ...newImages]);
+        setIsLoading(false);
+      })
+      .catch(error => {
+        console.error('Error fetching images', error);
+        setIsLoading(false);
+      });
+  };
 
-    if (query && page) {
-      setIsLoading(false);
-      fetchImages(page);
-    }
-  }, [query, page, images]);
-
-  useEffect(() => {
-    if (images.length > 0) {
-      setIsLoading(false);
-    }
-  }, [images.length]);
-
-  const onChangeQuery = query => {
-    setQuery(query);
+  const onChangeQuery = newQuery => {
+    setQuery(newQuery);
     setPage(1);
     setImages([]);
   };
@@ -73,15 +66,11 @@ function App() {
   return (
     <div className={css.App}>
       <Searchbar onSubmit={onChangeQuery} />
-
       {images.length > 0 && (
         <ImageGallery images={images} onImageClick={openModal} />
       )}
-
       {isLoading && <Loader />}
-
       {shouldRenderLoadMoreButton && <Button onClick={handleLoadMore} />}
-
       {isModalOpen && (
         <Modal onClose={closeModal} modalImageUrl={modalImageUrl} alt="">
           <img src={modalImageUrl} alt="" />
