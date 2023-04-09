@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Searchbar from './Searchbar/Searchbar';
 import ImageGallery from './ImageGallery/ImageGallery';
 import Loader from './Loader/Loader';
@@ -8,36 +8,43 @@ import css from '../components/App.module.css';
 
 const API_KEY = '33346847-49a68cc77b2127185fe21774e';
 
-function App() {
+const App = () => {
   const [images, setImages] = useState([]);
   const [query, setQuery] = useState('');
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState('');
 
-  useEffect(() => {
-    if (query !== '') {
-      fetchImages();
-    } // eslint-disable-next-line
-  }, [query, page]);
-
-  const fetchImages = () => {
-    setIsLoading(true);
+  const fetchImages = useCallback(() => {
     const url = `https://pixabay.com/api/?q=${query}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`;
+
+    setIsLoading(false);
+
     fetch(url)
       .then(response => response.json())
       .then(data => {
-        const newImages = data.hits.filter(
-          hit => !images.find(img => img.id === hit.id)
-        );
-        setImages(prevImages => [...prevImages, ...newImages]);
-        setIsLoading(false);
+        setImages(prevImages => {
+          const newImages = data.hits.filter(
+            hit => !prevImages.find(img => img.id === hit.id)
+          );
+          return [...prevImages, ...newImages];
+        });
       })
       .catch(error => {
         console.error('Error fetching images', error);
+      })
+      .finally(() => {
         setIsLoading(false);
       });
+  }, [query, page]);
+
+  useEffect(() => {
+    fetchImages();
+  }, [fetchImages]);
+
+  const handleLoadMore = () => {
+    setPage(prevPage => prevPage + 1);
   };
 
   const onChangeQuery = newQuery => {
@@ -56,21 +63,20 @@ function App() {
     setModalImageUrl('');
   };
 
-  const handleLoadMore = () => {
-    setIsLoading(true);
-    setPage(prevPage => prevPage + 1);
-  };
-
   const shouldRenderLoadMoreButton = images.length > 0 && !isLoading;
 
   return (
     <div className={css.App}>
       <Searchbar onSubmit={onChangeQuery} />
+
       {images.length > 0 && (
         <ImageGallery images={images} onImageClick={openModal} />
       )}
+
       {isLoading && <Loader />}
+
       {shouldRenderLoadMoreButton && <Button onClick={handleLoadMore} />}
+
       {isModalOpen && (
         <Modal onClose={closeModal} modalImageUrl={modalImageUrl} alt="">
           <img src={modalImageUrl} alt="" />
@@ -78,6 +84,6 @@ function App() {
       )}
     </div>
   );
-}
+};
 
 export default App;
