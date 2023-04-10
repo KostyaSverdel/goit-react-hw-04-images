@@ -11,7 +11,7 @@ const API_KEY = '33346847-49a68cc77b2127185fe21774e';
 const App = () => {
   const [images, setImages] = useState([]);
   const [query, setQuery] = useState('');
-  const [page, setPage] = useState(0);
+  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalImageUrl, setModalImageUrl] = useState('');
