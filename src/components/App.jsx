@@ -19,10 +19,15 @@ const App = () => {
   const fetchImages = useCallback(() => {
     const url = `https://pixabay.com/api/?q=${query}&page=${page}&key=${API_KEY}&image_type=photo&orientation=horizontal&per_page=12`;
 
-    setIsLoading(false);
+    setIsLoading(true);
 
     fetch(url)
-      .then(response => response.json())
+      .then(response => {
+        if (!response.ok) {
+          throw new Error(response.statusText);
+        }
+        return response.json();
+      })
       .then(data => {
         setImages(prevImages => {
           const newImages = data.hits.filter(
